@@ -1,22 +1,24 @@
 /**
- * ReaderState is the minimal mutable state for line-by-line interactive reading.
- * No nulls: empty string means "no node open".
+ * ReaderState: no nulls.
+ * - currentClass: "" means "no class block open"
+ * - currentNodeKey: "" means "no current node"
  */
 
 export class ReaderState {
   public currentClass: string;
   public currentNodeKey: string;
 
-  public constructor(defaultClass: string) {
-    this.currentClass = defaultClass;
+  public constructor() {
+    this.currentClass = "";
     this.currentNodeKey = "";
   }
 
-  public resetClass(defaultClass: string): void {
-    this.currentClass = defaultClass;
+  public clearNode(): void {
+    this.currentNodeKey = "";
   }
 
-  public closeNode(): void {
+  public clearClass(): void {
+    this.currentClass = "";
     this.currentNodeKey = "";
   }
 }

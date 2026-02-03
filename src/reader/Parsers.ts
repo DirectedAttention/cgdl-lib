@@ -4,10 +4,10 @@
  * Commands implemented:
  * A) Class block control:
  *   - "[[ ClassName ]]" => open/reopen class; clears current node
- *   - "[[ ]]" or "[[]]" or "]]" => close class; clears class and node
+ *   - "[[ ]]" / "]]"    => close class; clears class and node
  *
  * B) Node control:
- *   - "[] Label" => select/create node in current class
+ *   - "## Label" => select/create node in current class
  *   - "[]"       => close node only
  *
  * C) Edge declaration (from current node):
@@ -17,7 +17,9 @@
 
 import { trimOne } from "../utils/strings";
 
-export function parseClassOpenOrClose(line: string): { kind: "ClassOpen"; className: string } | { kind: "ClassClose" } | null {
+export function parseClassOpenOrClose(
+  line: string
+): { kind: "ClassOpen"; className: string } | { kind: "ClassClose" } | null {
   const t = trimOne(line);
 
   // Close forms
@@ -34,28 +36,26 @@ export function parseClassOpenOrClose(line: string): { kind: "ClassOpen"; classN
   return { kind: "ClassOpen", className: inside };
 }
 
-export function parseNodeSelectOrClose(line: string): { kind: "NodeSelect"; label: string } | { kind: "NodeClose" } | null {
-  const t = trimOne(line);
-  if (!t.startsWith("[]")) return null;
+export function parseNodeHeader(line: string): { label: string } | null {
+  if (!line.startsWith("##")) return null;
+  const label = trimOne(line.slice(2));
+  if (label.length === 0) return null;
+  return { label };
+}
 
-  const rest = trimOne(t.slice(2));
-  if (rest.length === 0) return { kind: "NodeClose" };
-  return { kind: "NodeSelect", label: rest };
+export function isCloseNodeLine(line: string): boolean {
+  return trimOne(line) === "[]";
 }
 
 export function parseOutgoingEdge(line: string): { cls: string; label: string } | null {
   // pattern: OtherClass : TargetLabel
-  // NOTE: we do NOT require trimming the whole line for storage; only for matching.
   const t = trimOne(line);
   const idx = t.indexOf(":");
   if (idx < 0) return null;
 
   const left = trimOne(t.slice(0, idx));
   const right = trimOne(t.slice(idx + 1));
-  if (!right) return null;
-
-  // same-class shorthand handled elsewhere (left === "")
-  if (!left) return null;
+  if (!left || !right) return null;
 
   return { cls: left, label: right };
 }
@@ -79,5 +79,6 @@ export function parseProperty(line: string): { key: string; value: string } | nu
 
   return { key, value };
 }
+
 
 
