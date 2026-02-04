@@ -9,7 +9,7 @@
  */
 
 import { expect } from "vitest";
-import type { NodeKey } from "../src/type";
+import type { NodeKey } from "../src/types";
 import type { CGGraph } from "../src/model/CGGraph";
 import type { Diagnostics } from "../src/reader/Diagnostics";
 

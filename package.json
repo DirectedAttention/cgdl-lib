@@ -3,13 +3,13 @@
   "version": "0.1.0",
   "type": "module",
   "private": true,
-  "description": "CGDL core graph-building reader (ESM-only).",
+  "description": "CGDL graph-building linrary (ESM-only).",
   "license": "MIT",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
     "test": "vitest run",
-    "test:watch": "vitest",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "build": "tsc -p tsconfig.json",
+    "clean": "rmdir /s /q dist 2>nul || exit /b 0",
+    "prepublishOnly": "npm run clean && npm test && npm run build"
   },
   "devDependencies": {
     "typescript": "^5.8.0",
@@ -17,6 +17,20 @@
   },
   "overrides": {
     "esbuild": "^0.25.0"
-  }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ]
+
 }
 
