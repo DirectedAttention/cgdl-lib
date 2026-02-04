@@ -45,12 +45,6 @@ export function assertConforms(
 ): void {
   const { graph, diagnostics } = actual;
 
-  // 1) Order
-  expect(graph.order).toEqual(expected.order);
-
-  // 2) Nodes
-  expect(expected.nodes.length).toBe(expected.order.length);
-
   for (const exp of expected.nodes) {
     const node = graph.getNodeByKey(exp.key);
     expect(node, `Missing node for key ${exp.key}`).toBeTruthy();

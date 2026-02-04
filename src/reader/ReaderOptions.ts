@@ -11,21 +11,8 @@ export interface ReaderOptions {
   defaultClass?: string; // default "text"
 
   /**
-   * Strict conformance:
-   * - property outside node => error
-   * - invalid class/label => error
-   */
-  strict?: boolean; // default true
-
-  /**
    * If true, outgoing edge creates the target node as a stub (recommended convenience).
    */
   createStubNodesForEdges?: boolean; // default true
-
-  /**
-   * Optional future: same-class shorthand ": TargetLabel"
-   * Default false (kept out of frozen spec unless you explicitly enable it).
-   */
-  allowSameClassEdgeShorthand?: boolean; // default false
 }
 

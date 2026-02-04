@@ -1,18 +1,25 @@
+// src/model/CGGraph.ts
+
 /**
  * Graph storage:
  * - nodes: Map<NodeKey, CGNode>
- * - order: NodeKey[] (stable insertion order)
  *
  * Identity is (ClassName, Label) => NodeKey = norm(class)::norm(label)
+ * NOTE: CGDL node sets are unordered by design, so we do NOT maintain insertion order.
  */
 
 import type { NodeKey } from "../types";
 import { normalizeDisplay, normalizeKeyPart } from "../utils/normalize";
 import { CGNode } from "./CGNode";
 
+/**
+ * In-memory container for a CGDL graph.
+ * Stores nodes by canonical NodeKey.
+ * Nodes are created/merged on demand via getOrCreateNode.
+ * Unordered by design — no insertion order preserved.
+ */
 export class CGGraph {
   public readonly nodes: Map<NodeKey, CGNode> = new Map();
-  public readonly order: NodeKey[] = [];
 
   public makeNodeKey(className: string, label: string): NodeKey {
     return `${normalizeKeyPart(className)}::${normalizeKeyPart(label)}`;
@@ -22,8 +29,10 @@ export class CGGraph {
     return this.nodes.get(key);
   }
 
-  public getOrCreateNode(className: string, label: string): CGNode {
+  public getOrCreateNode(className: string, label: string): CGNode 
+  {
     const key = this.makeNodeKey(className, label);
+
     const existing = this.nodes.get(key);
     if (existing) {
       existing.refreshDisplay(normalizeDisplay(className), normalizeDisplay(label));
@@ -37,7 +46,6 @@ export class CGGraph {
     });
 
     this.nodes.set(key, node);
-    this.order.push(key);
     return node;
   }
 }

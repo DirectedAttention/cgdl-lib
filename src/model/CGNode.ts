@@ -9,7 +9,8 @@ import type { EdgeRef, NodeKey } from "../types";
 import { normalizeDisplay, normalizeKeyPart } from "../utils/normalize";
 import { Line } from "./Line";
 
-export class CGNode {
+export class CGNode 
+{
   public readonly key: NodeKey;
 
   // Display (preserve case, whitespace collapsed)
@@ -66,8 +67,9 @@ export class CGNode {
     return true;
   }
 
-  public addLine(raw: string): void {
-    this.lines.push(new Line(raw));
+  public addLine(line: Line): void 
+  {
+    this.lines.push(line);
   }
 }
 

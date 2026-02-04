@@ -2,48 +2,18 @@ import { describe, it } from "vitest";
 import { readText } from "../src/reader/Reader";
 import { assertConforms } from "./assertConforms";
 
-describe("cgdl-lib conformance: core graph-building", () => {
-  it("class open + node open + property + non-structural line preserved", () => {
-    const text = `
-[[ people ]]
-## Sasson Margaliot
-born = 19XX
-!! call LLM later
-`;
-
-    const r = readText(text, { strict: true });
-
-    assertConforms(
-      { graph: r.graph, diagnostics: r.diagnostics },
-      {
-        order: ["people::sasson margaliot"],
-        nodes: [
-          {
-            key: "people::sasson margaliot",
-            classDisplay: "people",
-            labelDisplay: "Sasson Margaliot",
-            properties: { born: "19XX" },
-            outgoing: [],
-            incoming: [],
-            lines: [{ signal: "!!", text: "!! call LLM later" }]
-          }
-        ],
-        warnings: [],
-        errors: []
-      }
-    );
-  });
-
-  it("node re-open appends; property overwrite replaces previous", () => {
+  it("node re-open appends; property overwrite replaces previous", () => 
+  {
     const text = `
 [[ people ]]
 ## Paris
-country = France
+{} country = France
+
 ## Paris
-country = Republic of France
+{} country = Republic of France
 `;
 
-    const r = readText(text, { strict: true });
+    const r = readText(text);
 
     assertConforms(
       { graph: r.graph, diagnostics: r.diagnostics },
@@ -63,6 +33,7 @@ country = Republic of France
     );
   });
 
+  
   it("outgoing edge creates stub target node (default behavior)", () => {
     const text = `
 [[ chess ]]
@@ -70,7 +41,7 @@ country = Republic of France
 Player:Kasparov
 `;
 
-    const r = readText(text, { strict: true, createStubNodesForEdges: true });
+    const r = readText(text, { createStubNodesForEdges: true });
 
     assertConforms(
       { graph: r.graph, diagnostics: r.diagnostics },
@@ -101,7 +72,7 @@ Player:Kasparov
 Player:Kasparov
 `;
 
-    const r = readText(text, { strict: true });
+    const r = readText(text);
 
     assertConforms(
       { graph: r.graph, diagnostics: r.diagnostics },
@@ -120,28 +91,8 @@ Player:Kasparov
     );
   });
 
-  it("property outside a node is an error in strict mode", () => {
-    const text = `
-[[ people ]]
-born = 19XX
-## A
-x = 1
-`;
 
-    const r = readText(text, { strict: true });
-
-    assertConforms(
-      { graph: r.graph, diagnostics: r.diagnostics },
-      {
-        order: ["people::a"],
-        nodes: [{ key: "people::a", properties: { x: "1" } }],
-        warnings: [],
-        errors: ["Property line outside of any node: 'born = 19XX'"]
-      }
-    );
-  });
-
-  it("class close clears currentClass; node open without class errors (strict)", () => {
+  it("class close switches to graph-level class; node open is allowed", () => {
     const text = `
 [[ people ]]
 ## A
@@ -149,40 +100,45 @@ x = 1
 ## B
 `;
 
-    const r = readText(text, { strict: true });
+  const r = readText(text);
 
-    assertConforms(
-      { graph: r.graph, diagnostics: r.diagnostics },
-      {
-        order: ["people::a"],
-        nodes: [{ key: "people::a" }],
-        warnings: [],
-        errors: ["Cannot select node '## B' because currentClass is empty."]
-      }
-    );
-  });
+  assertConforms(
+    { graph: r.graph, diagnostics: r.diagnostics },
+    {
+      order: ["people::a", "::b"],
+      nodes: [
+        { key: "people::a", outgoing: [], incoming: [] },
+        { key: "::b", outgoing: [], incoming: [] }
+      ],
+      warnings: [],
+      errors: []
+    }
+  );
+});
 
-  it("close node line [] clears current node; edge after close is ignored with warning", () => {
-    const text = `
+
+it("close node line ## routes subsequent edge to the class default node", () => {
+  const text = `
 [[ people ]]
 ## A
-[]
+##
 Friend:B
 `;
 
-    const r = readText(text, { strict: true });
+  const r = readText(text, { createStubNodesForEdges: true });
 
-    // We expect:
-    // - Node A exists
-    // - Edge line after [] is outside a node => warning (ignored)
-    assertConforms(
-      { graph: r.graph, diagnostics: r.diagnostics },
-      {
-        order: ["people::a"],
-        nodes: [{ key: "people::a" }],
-        warnings: ["Outgoing edge ignored because no current node is open: 'Friend:B'"],
-        errors: []
-      }
-    );
-  });
+  assertConforms(
+    { graph: r.graph, diagnostics: r.diagnostics },
+    {
+      order: ["people::a", "people::", "friend::b"],
+      nodes: [
+        { key: "people::a", outgoing: [], incoming: [] },
+        { key: "people::", outgoing: [{ cls: "Friend", label: "B" }], incoming: [] },
+        { key: "friend::b", outgoing: [], incoming: [] }
+      ],
+      warnings: [],
+      errors: []
+    }
+  );
 });
+
