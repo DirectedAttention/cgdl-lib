@@ -205,7 +205,7 @@ function tryHandleOutgoingEdge(
   }
 
   // Add reciprocal incoming on target
-  const fromParts = parseNodeKey(from.key);
+  const fromParts = graph.parseNodeKey(from.key);
   target.addIncoming(fromParts.cls, fromParts.label);
 
   return { recognized: "edge_out", lineRecord };
