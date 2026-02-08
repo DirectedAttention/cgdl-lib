@@ -2,9 +2,25 @@
   "name": "cgdl-lib",
   "version": "0.1.0",
   "type": "module",
-  "private": true,
-  "description": "CGDL graph-building linrary (ESM-only).",
+  "private": false,
+  "description": "CGDL Library — TypeScript parser and graph builder for Context Graph Description Language",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DirectedAttention/cgdl-lib.git"
+  },
+  "bugs": {
+    "url": "https://github.com/DirectedAttention/cgdl-lib/issues"
+  },
+  "homepage": "https://github.com/DirectedAttention/cgdl-lib#readme",
+  "keywords": [
+    "cgdl",
+    "directed-graph",
+    "parser",
+    "knowledge-graph",
+    "incremental-parser",
+    "text-format"
+  ],
   "scripts": {
     "test": "vitest run",
     "build": "tsc -p tsconfig.json",
@@ -12,6 +28,7 @@
     "prepublishOnly": "npm run clean && npm test && npm run build"
   },
   "devDependencies": {
+    "tsx": "^4.21.0",
     "typescript": "^5.8.0",
     "vitest": "^2.1.0"
   },
@@ -31,6 +48,4 @@
     "README.md",
     "LICENSE"
   ]
-
 }
-

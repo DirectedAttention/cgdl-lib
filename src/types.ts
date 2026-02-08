@@ -1,8 +1,9 @@
+// src/types.ts
+
 /**
  * cgdl-lib — core types
- * Product 1: cgdl-lib (TypeScript, ESM-only, npm)
+ * cgdl-lib (TypeScript, ESM-only, npm)
  */
-
 
 /**
  * Raw class name as it appears in [[class]] lines.

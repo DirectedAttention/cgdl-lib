@@ -5,7 +5,7 @@
  * - lines preserved as Line{signal,text}
  */
 
-import type { EdgeRef, NodeKey } from "../types";
+import type { NodeKey } from "../types";
 import { normalizeDisplay, normalizeKeyPart } from "../utils/normalize";
 import { Line } from "./Line";
 
@@ -20,12 +20,8 @@ export class CGNode
   // Properties: overwrite semantics.
   public readonly properties: Map<string, string> = new Map();
 
-  // Edges: de-duplicated, but stored in arrays for stable iteration/serialization.
-  public readonly outgoing: EdgeRef[] = [];
-  public readonly incoming: EdgeRef[] = [];
-
-  private readonly _outgoingSet: Set<string> = new Set();
-  private readonly _incomingSet: Set<string> = new Set();
+  public readonly _outgoingSet: Set<string> = new Set();  // stores TARGET node keys (to)
+  public readonly _incomingSet: Set<string> = new Set();  // stores SOURCE node keys (from)
 
   // Non-structural lines inside the node.
   public readonly lines: Line[] = [];
@@ -48,22 +44,29 @@ export class CGNode
   /**
    * Returns true if inserted; false if duplicate.
    */
-  public addOutgoing(cls: string, label: string): boolean {
-    const k = edgeKey(cls, label);
-    if (this._outgoingSet.has(k)) return false;
+  public addOutgoing(targetClass: string, targetLabel: string): boolean {
+    const k = this.edgeKey(targetClass, targetLabel);
+
+    if (this._outgoingSet.has(k)) 
+      return false;
+
     this._outgoingSet.add(k);
-    this.outgoing.push({ cls, label });
+
     return true;
   }
 
   /**
    * Returns true if inserted; false if duplicate.
    */
-  public addIncoming(cls: string, label: string): boolean {
-    const k = edgeKey(cls, label);
-    if (this._incomingSet.has(k)) return false;
+  public addIncoming(sourceClass: string, sourceLabel: string): boolean 
+  {
+    const k = this.edgeKey(sourceClass, sourceLabel);
+
+    if (this._incomingSet.has(k)) 
+      return false;
+
     this._incomingSet.add(k);
-    this.incoming.push({ cls, label });
+
     return true;
   }
 
@@ -71,8 +74,37 @@ export class CGNode
   {
     this.lines.push(line);
   }
+
+  /**
+   * Removes a specific outgoing edge.
+   * Returns true if the edge existed and was removed.
+   */
+  public removeOutgoing(targetClass: string, targetLabel: string): boolean {
+    const k = this.edgeKey(targetClass, targetLabel);
+
+    if (!this._outgoingSet.has(k)) 
+      return false;
+
+    this._outgoingSet.delete(k);
+
+    return true;
+  }
+
+  /**
+   * Removes a specific incoming edge.
+   * Returns true if the edge existed and was removed.
+   */
+  public removeIncoming(sourceClass: string, sourceLabel: string): boolean {
+    const k = this.edgeKey(sourceClass, sourceLabel);
+    if (!this._incomingSet.has(k)) 
+      return false;
+
+    this._incomingSet.delete(k);
+    return true;
+  }  
+
+  private edgeKey(cls: string, label: string): string {
+    return `${normalizeKeyPart(cls)}::${normalizeKeyPart(label)}`;
+  }
 }
 
-function edgeKey(cls: string, label: string): string {
-  return `${normalizeKeyPart(cls)}::${normalizeKeyPart(label)}`;
-}

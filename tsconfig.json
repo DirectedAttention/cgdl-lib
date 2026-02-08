@@ -1,16 +1,17 @@
 {
   "compilerOptions": {
-    "target": "ES2022",
-    "lib": ["ES2022"],
-    "module": "ES2022",
-    "moduleResolution": "Bundler",
+    "rootDir": "src",
+    "outDir": "dist",
+
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "outDir": "dist",
-    "rootDir": ".",
-    "strict": true,
-    "skipLibCheck": true
+
+    "module": "ES2022",
+    "moduleResolution": "Bundler",
+    "target": "ES2022"
   },
-  "include": ["src", "tests"]
+  "include": ["src/**/*.ts"],
+  "exclude": ["tests", "**/*.spec.ts", "dist", "node_modules"]
 }
+

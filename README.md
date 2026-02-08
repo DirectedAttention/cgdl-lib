@@ -1,195 +1,251 @@
 # cgdl-lib
 
-## A tiny, deliberate TypeScript library that turns plain-text CGDL into structured directed graphs
+A tiny, deliberate TypeScript library that reads plain-text CGDL and builds an in-memory directed graph.
 
-Reads line-oriented text and builds a compact directed graph in memory.
-cgdl-lib implements only the minimal “graph-building core” of CGDL:
+cgdl-lib implements only the graph-building core of CGDL:
 
 - class selection
 - node selection
 - properties
-- outgoing edges
+- outgoing edges (with fully consistent incoming edges)
+- preservation of non-structural lines as Line { signal, text }
 
-Everything else is *preserved*, not interpreted.
+Everything else is preserved but never interpreted. Higher layers (protocols, CLIs, editors) can assign meaning to preserved lines later.
 
-That is the point: cgdl-lib is a neutral foundation that:
-(1) parses core syntax,
-(2) builds a graph model in memory,
-(3) extracts (optional) two-character command “signals” from non-structural lines,
-(4) stores those lines on nodes for higher layers to interpret later
-    (e.g., lingage-protocol, lingage-cli, editors, VS Code integrations).
+Status: not published to npm yet. Use from source / GitHub until the first release.
 
-CGDL (Context Graph Description Language) is designed to be friendly to:
+----------------------------------------------------------------
 
-- hand editing
+WHAT CGDL IS
+
+CGDL (Context Graph Description Language) is a line-oriented, hand-editable format for describing small graphs and attached context. It is designed to be friendly to:
+
+- hand-editing
 - git diffs
 - sequential reading
-- “structured notes” that are actually a graph
+- structured notes that happen to form a graph
 
-## Publishing status
+----------------------------------------------------------------
 
-Not yet published to npm.
-(Do NOT write `npm install cgdl-lib` yet.)
+CORE SYNTAX (IMPLEMENTED)
 
-## What cgdl-lib implements
+1) Class directives
 
-### Core directives at a glance
+Open / reopen class:
 
-Class open:
-[[ ClassName ]]
-
-Class close (graph-level class mode):
-[[ ]]
-
-Node open/select:
-Start line with ## followed by the Label.
-
-Property:
-{} key = value
-
-Outgoing edge:
-OtherClass:TargetLabel
-
-Non-structural line (preserved as Line{ signal, text }):
-anything else
-
-## Parsing model: class + node selection
-
-cgdl-lib maintains a small incremental reader state:
-
-- currentClass (string)
-- currentNodeKey (string, empty when no explicit node is selected)
-
-### Class directives
-
-Open or reopen a class:
 [[ ClassName ]]
 
 Effects:
 
 - state.currentClass = "ClassName"
-- clears current node selection (state.clearNode())
+- clears current node selection
 
 Close class (enter graph-level class mode):
+
 [[ ]]
 
 Effects:
 
-- state.currentClass = "" (empty string)
+- state.currentClass = ""
 - clears current node selection
 
-Notes:
+Note: Leading whitespace is ignored for directive detection.
 
-- Class names are trimmed; internal whitespace runs collapse (for keying).
-- Keying is case-insensitive (normalized to lowercase).
+----------------------------------------------------------------
 
-Important:
-Node directives always attach to the *current class*, even if it is "".
+Node directives
 
-## Effective node rules (important design choice)
+Open/select node in the current class:
 
-There is no “strict mode”.
-Commands should still work even if no explicit node is currently open.
+## Label text
+
+Effects:
+
+- creates node if needed: (currentClass, "Label text")
+- sets it as current node
+
+Close current node only (class stays open):
+
+##
+
+Effects:
+
+- clears current node selection
+
+----------------------------------------------------------------
+
+## Properties
+
+Set property:
+
+{} key = value
+
+Parsing:
+
+- key is trimmed and whitespace-collapsed
+- value is everything after the first = (so = is allowed inside the value)
+
+Behavior:
+
+- applies to the effective node (see below)
+- overwrites (reassignment semantics): last value wins
+
+----------------------------------------------------------------
+
+## Outgoing edges
+
+Outgoing edge:
+
+OtherClass:TargetLabel
+
+Behavior:
+
+- adds an outgoing edge from the effective node
+- always creates the target node if it doesn’t exist yet (stub node)
+- maintains consistent edges:
+  - source stores target in _outgoingSet
+  - target stores source in _incomingSet
+- duplicate edge adds are ignored (with a warning)
+
+----------------------------------------------------------------
+
+EFFECTIVE NODE RULES (IMPORTANT)
+
+Commands must still work even when no explicit node is currently open.
 
 Definition:
 
-If an explicit node is open (state.currentNodeKey != ""):
+- If an explicit node is open (state.currentNodeKey != ""):
   effectiveNode = that node
-Else:
+- Else:
   effectiveNode = graph.getOrCreateNode(state.currentClass, "")
 
-So when no node is selected, properties and outgoing edges attach to the
-“class default node”:
+So when no node is selected, properties and edges attach to the class default node:
 
 (currentClass, "")
 
-### Graph-level class
+Graph-level class
 
-After [[ ]], currentClass becomes "".
-Nodes opened via @!@! Label in this state become:
+After [[ ]], currentClass = "".
+
+Nodes opened via ## Label in this state become:
 
 ("", "Label")
 
 These are graph-level / global feature nodes.
 
-## Properties
+----------------------------------------------------------------
 
-Set property:
-{} key = value
+UNORDERED-BY-DESIGN
 
-Parsing rules:
+Graph node sets are unordered by design. cgdl-lib intentionally does not preserve insertion order.
 
-- key is trimmed and whitespace-collapsed
-- value is everything after the first "="
-  (so "=" is allowed inside value)
+Do not write tests or logic that depends on iteration order of nodes or edges.
 
-## Outgoing edges
+----------------------------------------------------------------
 
-Outgoing edge:
-OtherClass:TargetLabel
+LINE PRESERVATION AND 2-CHAR SIGNALS (FROZEN RULE)
 
-Behavior:
-
-- added as an outgoing edge from the effective node
-- if createStubNodesForEdges == true (default), target node is auto-created
-
-## Preserved lines and 2-character signals (frozen rule)
-
-Any non-structural line is preserved inside the current node as:
+Non-structural lines are preserved inside the current node as:
 
 Line { signal: string, text: string }
 
 Signal extraction:
 
-1) Ignore leading whitespace for detection.
-2) If the first two non-whitespace chars are BOTH punctuation,
-3) AND neither is one of: '-' , "'" , '_'
-4) Then:
-   - signal = those 2 chars
-   - text = the rest (trimOne)
-5) Otherwise:
-   - signal = ""
-   - text = left-trimmed line
+1. Ignore leading whitespace for detection.
+2. If the first two non-whitespace characters are BOTH punctuation,
+3. AND neither is one of: - , ' , _
+4. Then:
+   signal = those 2 chars
+   text = the rest (trimOne)
+5. Otherwise:
+   signal = ""
+   text = left-trimmed line
 
-Also:
+Notes:
 
-- '-' and "'" are treated as “word-ish” (never command punctuation).
-- whitespace cannot be part of a command (left-trim / trimOne is used).
+- '-' and "'" are treated as “word-ish” and never count as command punctuation.
+- whitespace cannot be part of a command.
 
 Examples:
-"{} country = France"  => signal "{}"
-"!! hello"             => signal "!!"
-"-> something"         => NOT a signal (contains '-') => signal ""
-"'# foo"               => NOT a signal (contains "'") => signal ""
-"+-" at start          => NOT a signal (contains '-') => signal ""
+
+- "{} country = France" -> signal "{}"
+- "!! hello"            -> signal "!!"
+- "-> something"        -> not a signal (contains '-') -> signal ""
+- "'# foo"              -> not a signal (contains "'") -> signal ""
+- "+-" at start         -> not a signal (contains '-') -> signal ""
 
 Text normalization:
 
-- normalizeDisplay / normalizeWhitespace collapses whitespace runs, trims
+- display normalization collapses whitespace runs and trims
 - keying normalization lowercases
 
-## API
+----------------------------------------------------------------
 
-readText(text, options?) -> { graph, state, diagnostics }
+API
 
-Reads full text and returns:
+readText(text: string)
+
+Parses full text and returns:
 
 - graph
 - state (incremental reader state)
 - diagnostics (warnings/errors)
 
-readLine(graph, state, diagnostics, rawLine, lineNo, options?) -> LineResult
+readLine(graph, state, diagnostics, rawLine, lineNo)
 
-Incremental parser for streaming/editor scenarios:
+Incremental parser for editor / streaming scenarios:
 
-- updates graph + state
+- updates graph and state
 - appends warnings/errors to diagnostics
 
-Diagnostics currently stores warnings/errors as arrays of:
+Diagnostics store:
 
-- { lineNo, message }
-(or message-only depending on latest local edits)
+- warnings: { lineNo, message }[]
+- errors: { lineNo, message }[]
 
-## License
+----------------------------------------------------------------
+
+INCREMENTAL PARSING EXAMPLE
+
+import { CGGraph } from "../src/model/CGGraph";
+import { ReaderState } from "../src/reader/ReaderState";
+import { Diagnostics } from "../src/reader/Diagnostics";
+import { readLine } from "../src/reader/Reader";
+
+const graph = new CGGraph();
+const state = new ReaderState();
+const diagnostics = new Diagnostics();
+
+const lines = [
+  "[[ Places ]]",
+  "## Paris",
+  "{} country = France",
+  "Food:Croissant",
+  "##",
+  "## Lyon",
+  "{} country = France",
+];
+
+lines.forEach((rawLine, i) => {
+  readLine(graph, state, diagnostics, rawLine, i + 1);
+});
+
+console.log(graph);
+console.log(diagnostics);
+
+----------------------------------------------------------------
+
+DEVELOPMENT
+
+Tests (vitest):
+npm test
+
+Build:
+npm run build
+
+----------------------------------------------------------------
+
+LICENSE
 
 MIT (see LICENSE).
