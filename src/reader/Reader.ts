@@ -6,17 +6,17 @@
 //   source.outgoing and target.incoming, and target nodes are
 //   created as stubs if they do not exist yet.
 
-import { CGGraph } from "../model/CGGraph";
-import { Line } from "../model/Line";
-import { splitLines, trimOne } from "../utils/strings";
-import { Diagnostics } from "./Diagnostics";
-import { ReaderState } from "./ReaderState";
+import { CGGraph } from "../model/CGGraph.js";
+import { Line } from "../model/Line.js";
+import { splitLines, trimOne } from "../utils/strings.js";
+import { Diagnostics } from "./Diagnostics.js";
+import { ReaderState } from "./ReaderState.js";
 import {
   parseClassOpenOrClose,
   parseNodeHeader,
   parseOutgoingEdge,
   parsePropertyText,
-} from "./Parsers";
+} from "./Parsers.js";
 
 export type Recognized =
   | "none"

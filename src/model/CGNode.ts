@@ -5,9 +5,9 @@
  * - lines preserved as Line{signal,text}
  */
 
-import type { NodeKey } from "../types";
-import { normalizeDisplay, normalizeKeyPart } from "../utils/normalize";
-import { Line } from "./Line";
+import type { NodeKey } from "../types.js";
+import { normalizeDisplay, normalizeKeyPart } from "../utils/normalize.js";
+import { Line } from "./Line.js";
 
 export class CGNode 
 {

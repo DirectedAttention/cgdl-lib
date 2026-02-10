@@ -7,11 +7,13 @@
     "declarationMap": true,
     "sourceMap": true,
 
-    "module": "ES2022",
-    "moduleResolution": "Bundler",
-    "target": "ES2022"
+    "target": "ES2022",
+
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+
+    "verbatimModuleSyntax": true
   },
   "include": ["src/**/*.ts"],
   "exclude": ["tests", "**/*.spec.ts", "dist", "node_modules"]
 }
-

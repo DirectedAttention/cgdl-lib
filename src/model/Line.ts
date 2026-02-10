@@ -11,7 +11,7 @@
 // - Otherwise, the line has signal == "" and the entire left-trimmed line is text.
 // - After splitting, text is display-normalized via normalizeDisplay().
 
-import { normalizeDisplay } from "../utils/normalize";
+import { normalizeDisplay } from "../utils/normalize.js";
 
 export class Line {
   public readonly signal: string; // "" or 2 chars

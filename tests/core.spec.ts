@@ -1,9 +1,9 @@
 // core.spec.ts
 
 import { describe, it, expect } from "vitest";
-import { readText } from "../src/reader/Reader";
-import { CGGraph } from "../src/model/CGGraph";
-import { assertConforms } from "./assertConforms";
+import { readText } from "../src/reader/Reader.js";
+import { CGGraph } from "../src/model/CGGraph.js";
+import { assertConforms } from "./assertConforms.js";
 
 describe("core", () => {
 

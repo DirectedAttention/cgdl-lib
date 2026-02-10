@@ -11,7 +11,7 @@
  * - "what?!"          NOT OK ('?' + '!' ; neither is allowed)
  */
 
-import { isAlnum } from "./strings";
+import { isAlnum } from "./strings.js";
 
 const ALLOWED_NONALNUM = new Set<string>([" ", "-", "'"]);
 

@@ -17,7 +17,7 @@
  *   - "{} key = value" (parsed elsewhere; this parser handles key/value split)
  */
 
-import { trimOne } from "../utils/strings";
+import { trimOne } from "../utils/strings.js";
 
 export function parseClassOpenOrClose(
   line: string

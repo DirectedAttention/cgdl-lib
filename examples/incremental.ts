@@ -1,7 +1,7 @@
-import { CGGraph } from "../src/model/CGGraph";
-import { Diagnostics } from "../src/reader/Diagnostics";
-import { ReaderState } from "../src/reader/ReaderState";
-import { readLine } from "../src/reader/Reader";
+import { CGGraph } from "../src/model/CGGraph.js";
+import { Diagnostics } from "../src/reader/Diagnostics.js";
+import { ReaderState } from "../src/reader/ReaderState.js";
+import { readLine } from "../src/reader/Reader.js";
 
 const graph = new CGGraph();
 const state = new ReaderState();

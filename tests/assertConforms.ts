@@ -10,9 +10,9 @@
  */
 
 import { expect } from "vitest";
-import type { NodeKey } from "../src/types";
-import type { CGGraph } from "../src/model/CGGraph";
-import type { Diagnostics } from "../src/reader/Diagnostics";
+import type { NodeKey } from "../src/types.js";
+import type { CGGraph } from "../src/model/CGGraph.js";
+import type { Diagnostics } from "../src/reader/Diagnostics.js";
 
 export interface ExpectedNode {
   key: NodeKey;

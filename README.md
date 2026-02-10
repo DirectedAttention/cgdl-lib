@@ -208,10 +208,10 @@ Diagnostics store:
 
 INCREMENTAL PARSING EXAMPLE
 
-import { CGGraph } from "../src/model/CGGraph";
-import { ReaderState } from "../src/reader/ReaderState";
-import { Diagnostics } from "../src/reader/Diagnostics";
-import { readLine } from "../src/reader/Reader";
+import { CGGraph } from "../src/model/CGGraph.js";
+import { ReaderState } from "../src/reader/ReaderState.js";
+import { Diagnostics } from "../src/reader/Diagnostics.js";
+import { readLine } from "../src/reader/Reader.js";
 
 const graph = new CGGraph();
 const state = new ReaderState();

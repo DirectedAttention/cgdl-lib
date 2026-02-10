@@ -8,9 +8,9 @@
  * NOTE: CGDL node sets are unordered by design, so we do NOT maintain insertion order.
  */
 
-import type { NodeKey } from "../types";
-import { normalizeDisplay, normalizeKeyPart } from "../utils/normalize";
-import { CGNode } from "./CGNode";
+import type { NodeKey } from "../types.js";
+import { normalizeDisplay, normalizeKeyPart } from "../utils/normalize.js";
+import { CGNode } from "./CGNode.js";
 
 /**
  * In-memory container for a CGDL graph.
